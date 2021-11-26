@@ -17,3 +17,15 @@ resource "google_project_service" "container" {
 
   disable_dependent_services = true
 }
+
+resource "google_project_service" "sts" {
+  service = "sts.googleapis.com"
+
+  disable_dependent_services = true
+}
+
+resource "google_project_service" "cloud_resource" {
+  service = "cloudresourcemanager.googleapis.com"
+
+  disable_dependent_services = true
+}

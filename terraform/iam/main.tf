@@ -6,7 +6,6 @@ provider "google" {
 
 terraform {
   backend "gcs" {
-    bucket  = "mitou-jr"
-    prefix = "tf/iam"
+    bucket  = "mitou-jr-tf-iam"
   }
 }
