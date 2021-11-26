@@ -29,6 +29,7 @@ resource "google_project_iam_binding" "iam-binding-iam-applier" {
 variable "basic-sa-iam-roles" {
   type = set(string)
   default = [
+    "roles/compute.networkAdmin",
     "roles/storage.admin",
     "roles/container.admin",
     "roles/cloudsql.admin"

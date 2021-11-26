@@ -1,4 +1,4 @@
-name: Plan
+name: Plan(Basic mode)
 
 on:
   pull_request:
@@ -7,6 +7,9 @@ on:
 
 jobs:
   plan:
+    permissions:
+      id-token: write
+      pull-requests: write
     name: Plan
     runs-on: ubuntu-latest
     strategy:
@@ -24,6 +27,19 @@ jobs:
         with:
           PATTERNS: |
             ${{ matrix.dir }}/**/*.tf
+      - name: Authenticate to GCP
+        if: steps.diff.outputs.diff
+        id: gcp_auth
+        uses: google-github-actions/auth@v0.3.1
+        with:
+          create_credentials_file: 'true'
+          workload_identity_provider: projects/233207969476/locations/global/workloadIdentityPools/github-action/providers/github-action-provider
+          service_account: ga-basic-applier@mitou-jr.iam.gserviceaccount.com
+          access_token_lifetime: 1200s
+
+      - name: gcloud auth login by workload identity
+        run: |-
+          gcloud auth login --brief --cred-file="${{ steps.gcp_auth.outputs.credentials_file_path }}"
 
       - name: Setup terraform
         if: steps.diff.outputs.diff
@@ -75,7 +91,7 @@ jobs:
             <details><summary>Show Plan</summary>
             \`\`\`${process.env.PLAN}\`\`\`
             </details>`;
-            github.issues.createComment({
+            github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,

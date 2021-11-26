@@ -29,3 +29,9 @@ resource "google_project_service" "cloud_resource" {
 
   disable_dependent_services = true
 }
+
+resource "google_project_service" "sql_admin" {
+  service = "sqladmin.googleapis.com"
+
+  disable_dependent_services = true
+}
