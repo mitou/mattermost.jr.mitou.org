@@ -1,0 +1,3 @@
+リソース系のTerraform置き場
+
+IAMは明示的にGithub Actionで許可を求めたいので、これを実行するSAにはIAMへの編集権限を与えない。
