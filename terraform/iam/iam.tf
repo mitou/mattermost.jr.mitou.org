@@ -43,20 +43,6 @@ resource "google_project_iam_binding" "iam-binding-iam-applier" {
   ]
 }
 
-variable "planner-sa-iam-roles" {
-  type = set(string)
-  default = [
-    "projects/mitou-jr/roles/tfplanner"
-  ]
-}
-
-resource "google_project_iam_binding" "iam-binding-planner" {
-  for_each = var.planner-sa-iam-roles
-  role     = each.value
-  project  = "mitou-jr"
-  members  = ["serviceAccount:${google_service_account.sa-ga-planner.email}"]
-}
-
 variable "basic-sa-iam-roles" {
   type = set(string)
   default = [
