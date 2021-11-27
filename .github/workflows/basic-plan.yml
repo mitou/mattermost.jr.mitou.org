@@ -38,6 +38,7 @@ jobs:
           access_token_lifetime: 1200s
 
       - name: gcloud auth login by workload identity
+        if: steps.diff.outputs.diff
         run: |-
           gcloud auth login --brief --cred-file="${{ steps.gcp_auth.outputs.credentials_file_path }}"
 

@@ -7,6 +7,9 @@ on:
 
 jobs:
   apply:
+    permissions:
+      id-token: write
+      pull-requests: write
     name: Apply
     runs-on: ubuntu-latest
     strategy:
@@ -35,6 +38,7 @@ jobs:
           access_token_lifetime: 1200s
 
       - name: gcloud auth login by workload identity
+        if: steps.diff.outputs.diff
         run: |-
           gcloud auth login --brief --cred-file="${{ steps.gcp_auth.outputs.credentials_file_path }}"
 
@@ -45,6 +49,7 @@ jobs:
           terraform_version: 1.0.11
 
       - name: Apply
+        if: steps.diff.outputs.diff
         run: |
             cd ${{ matrix.dir }}
             terraform init
