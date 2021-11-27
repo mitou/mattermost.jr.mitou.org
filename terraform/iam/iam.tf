@@ -17,12 +17,36 @@ resource "google_service_account" "sa-ga-basic-applier" {
   display_name = "Github Action用でIAM以外の要素を適用するためのサービスアカウント"
 }
 
+resource "google_service_account" "sa-ga-planner" {
+  account_id   = "ga-planner"
+  display_name = "Github Action用でPlanの時に利用するサービスアカウント"
+}
+
+
 resource "google_project_iam_binding" "iam-binding-iam-applier" {
   role    = "roles/iam.securityAdmin"
   project = "mitou-jr"
 
   members = [
     "serviceAccount:${google_service_account.sa-ga-iam-applier.email}",
+  ]
+}
+
+variable "planner-sa-iam-roles" {
+  type = set(string)
+  default = [
+    "roles/viewer",
+    "projects/mitou-jr/roles/tfplanner"
+  ]
+}
+
+resource "google_project_iam_binding" "iam-binding-planner" {
+  for_each = var.planner-sa-iam-roles
+  role     = each.value
+  project  = "mitou-jr"
+
+  members = [
+    "serviceAccount:${google_service_account.sa-ga-planner.email}",
   ]
 }
 
@@ -38,7 +62,7 @@ variable "basic-sa-iam-roles" {
 
 resource "google_project_iam_binding" "iam-binding-basic-applier" {
   for_each = var.basic-sa-iam-roles
-  project = "mitou-jr"
+  project  = "mitou-jr"
   members = [
     "serviceAccount:${google_service_account.sa-ga-basic-applier.email}",
   ]
