@@ -1,0 +1,53 @@
+name: Apply(Basic mode)
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  apply:
+    name: Apply
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dir: [
+          terraform/basic
+        ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Check diff
+        id: diff
+        uses: technote-space/get-diff-action@v5.0.2
+        with:
+          PATTERNS: |
+            ${{ matrix.dir }}/**/*.tf
+      - name: Authenticate to GCP
+        if: steps.diff.outputs.diff
+        id: gcp_auth
+        uses: google-github-actions/auth@v0.3.1
+        with:
+          create_credentials_file: 'true'
+          workload_identity_provider: projects/233207969476/locations/global/workloadIdentityPools/github-action/providers/github-action-provider
+          service_account: ga-basic-applier@mitou-jr.iam.gserviceaccount.com
+          access_token_lifetime: 1200s
+
+      - name: gcloud auth login by workload identity
+        run: |-
+          gcloud auth login --brief --cred-file="${{ steps.gcp_auth.outputs.credentials_file_path }}"
+
+      - name: Setup terraform
+        if: steps.diff.outputs.diff
+        uses: hashicorp/setup-terraform@v1.3.2
+        with:
+          terraform_version: 1.0.11
+
+      - name: Apply
+        run: |
+            cd ${{ matrix.dir }}
+            terraform init
+            terraform get
+            terraform apply -auto-approve
+        shell: bash
