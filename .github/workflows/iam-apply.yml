@@ -1,4 +1,4 @@
-name: Apply(Basic mode)
+name: Apply(IAM mode)
 
 on:
   push:
@@ -15,7 +15,7 @@ jobs:
     strategy:
       matrix:
         dir: [
-          terraform/basic
+          terraform/iam
         ]
     steps:
       - name: Checkout
@@ -34,7 +34,7 @@ jobs:
         with:
           create_credentials_file: 'true'
           workload_identity_provider: projects/233207969476/locations/global/workloadIdentityPools/github-action/providers/github-action-provider
-          service_account: ga-basic-applier@mitou-jr.iam.gserviceaccount.com
+          service_account: ga-iam-applier@mitou-jr.iam.gserviceaccount.com
           access_token_lifetime: 1200s
 
       - name: gcloud auth login by workload identity

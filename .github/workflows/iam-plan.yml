@@ -1,4 +1,4 @@
-name: Plan(Basic mode)
+name: Plan(IAM mode)
 
 on:
   pull_request:
@@ -15,7 +15,7 @@ jobs:
     strategy:
       matrix:
         dir: [
-          terraform/basic
+          terraform/iam
         ]
     steps:
       - name: Checkout
@@ -85,7 +85,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const output = `## \`${{ matrix.dir }}\`
+            const output = `## ⚠️⚠️⚠️\`${{ matrix.dir }}\`⚠️⚠️⚠️
             #### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
             #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
             <details><summary>Show Plan</summary>

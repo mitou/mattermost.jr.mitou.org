@@ -21,8 +21,16 @@ resource "google_iam_workload_identity_pool_provider" "github-action-pool-provid
     "attribute.workflow_ref" = "assertion.job_workflow_ref"
   }
   oidc {
-    issuer_uri        = "https://token.actions.githubusercontent.com"
+    issuer_uri = "https://token.actions.githubusercontent.com"
   }
+}
+
+resource "google_service_account_iam_binding" "workload_identity_binding-planner" {
+  service_account_id = google_service_account.sa-ga-planner.id
+  role               = "roles/iam.workloadIdentityUser"
+  members = [
+    "principalSet://iam.googleapis.com/projects/233207969476/locations/global/workloadIdentityPools/github-action/attribute.repository/mitou/mattermost.jr.mitou.org"
+  ]
 }
 
 resource "google_service_account_iam_binding" "workload_identity_binding-iam" {
