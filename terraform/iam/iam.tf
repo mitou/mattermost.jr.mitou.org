@@ -1,32 +1,35 @@
+
+
+locals {
+  project-viewers = [
+    "user:kyasbal1994@gmail.com",
+    "user:nishio.hirokazu@gmail.com",
+    "serviceAccount:${google_service_account.sa-ga-planner.email}"
+  ]
+
+  sa-tfplanners = [
+    "serviceAccount:${google_service_account.sa-ga-iam-applier.email}",
+    "serviceAccount:${google_service_account.sa-ga-basic-applier.email}",
+    "serviceAccount:${google_service_account.sa-ga-planner.email}"
+  ]
+}
 resource "google_project_iam_binding" "viewers" {
   role    = "roles/viewer"
   project = "mitou-jr"
-
-  members = [
-    "user:nishio.hirokazu@gmail.com",
-  ]
+  members = local.project-viewers
 }
 
-resource "google_service_account" "sa-ga-iam-applier" {
-  account_id   = "ga-iam-applier"
-  display_name = "Github Action用でIAMを適用するためのサービスアカウント"
-}
 
-resource "google_service_account" "sa-ga-basic-applier" {
-  account_id   = "ga-basic-applier"
-  display_name = "Github Action用でIAM以外の要素を適用するためのサービスアカウント"
-}
-
-resource "google_service_account" "sa-ga-planner" {
-  account_id   = "ga-planner"
-  display_name = "Github Action用でPlanの時に利用するサービスアカウント"
+resource "google_project_iam_binding" "tf-planners" {
+  role    = "projects/mitou-jr/roles/tfplanner"
+  project = "mitou-jr"
+  members = concat(local.project-viewers, local.sa-tfplanners)
 }
 
 variable "applier-iam-sa-iam-roles" {
   type = set(string)
   default = [
-    "roles/iam.securityAdmin",
-    "projects/mitou-jr/roles/tfplanner"
+    "roles/iam.securityAdmin"
   ]
 }
 
@@ -43,7 +46,6 @@ resource "google_project_iam_binding" "iam-binding-iam-applier" {
 variable "planner-sa-iam-roles" {
   type = set(string)
   default = [
-    "roles/viewer",
     "projects/mitou-jr/roles/tfplanner"
   ]
 }
@@ -52,10 +54,7 @@ resource "google_project_iam_binding" "iam-binding-planner" {
   for_each = var.planner-sa-iam-roles
   role     = each.value
   project  = "mitou-jr"
-
-  members = [
-    "serviceAccount:${google_service_account.sa-ga-planner.email}",
-  ]
+  members  = ["serviceAccount:${google_service_account.sa-ga-planner.email}"]
 }
 
 variable "basic-sa-iam-roles" {
@@ -71,8 +70,6 @@ variable "basic-sa-iam-roles" {
 resource "google_project_iam_binding" "iam-binding-basic-applier" {
   for_each = var.basic-sa-iam-roles
   project  = "mitou-jr"
-  members = [
-    "serviceAccount:${google_service_account.sa-ga-basic-applier.email}",
-  ]
-  role = each.value
-} 
+  members  = ["serviceAccount:${google_service_account.sa-ga-basic-applier.email}"]
+  role     = each.value
+}
