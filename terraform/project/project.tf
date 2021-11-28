@@ -35,3 +35,10 @@ resource "google_project_service" "sql_admin" {
 
   disable_dependent_services = true
 }
+
+
+resource "google_project_service" "cloud_kms" {
+  service = "cloudkms.googleapis.com"
+
+  disable_dependent_services = true
+}
