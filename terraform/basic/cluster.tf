@@ -15,6 +15,12 @@ resource "google_container_cluster" "primary" {
     enabled = true
   }
 
+  # アプリケーションレイヤでのシークレットの暗号化を有効にする
+  database_encryption {
+    state    = "ENCRYPTED"
+    key_name = google_kms_crypto_key.primary-key.id
+  }
+
   # Configuration options for the Release channel feature, which provide more control over automatic upgrades of your GKE clusters.
   release_channel {
     channel = "REGULAR"

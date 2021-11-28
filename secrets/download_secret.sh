@@ -1,0 +1,1 @@
+gsutil cp gs://mitou-jr-secret/.envrc .envrc

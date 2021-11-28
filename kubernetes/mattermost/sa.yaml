@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  namespace: mattermost
+  name: mattermost-primary
+  annotations:
+    iam.gke.io/gcp-service-account: "wi-mattermost-primary@mitou-jr.iam.gserviceaccount.com"

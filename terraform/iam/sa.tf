@@ -12,3 +12,9 @@ resource "google_service_account" "sa-ga-planner" {
   account_id   = "ga-planner"
   display_name = "Github Action用でPlanの時に利用するサービスアカウント"
 }
+
+
+resource "google_service_account" "wi-mattermost-primary" {
+  account_id   = "wi-mattermost-primary"
+  display_name = "Mattermostのワークロードで使うWorkload Identity"
+}
