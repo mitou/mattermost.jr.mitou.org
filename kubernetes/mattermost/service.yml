@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mattermost
+  namespace: mattermost
+  annotations:
+    cloud.google.com/neg: '{"ingress": true}'
+spec:
+  type: ClusterIP
+  selector:
+    app: mattermost
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8000

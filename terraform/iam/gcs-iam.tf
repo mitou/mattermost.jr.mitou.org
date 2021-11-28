@@ -7,8 +7,8 @@ locals {
   ]
 
   secret-accessibles = [
-      "user:kyasbal1994@gmail.com",
-      "user:nishio.hirokazu@gmail.com"
+    "user:kyasbal1994@gmail.com",
+    "user:nishio.hirokazu@gmail.com"
   ]
 
   main-bucket-accessibles = [
@@ -27,14 +27,14 @@ resource "google_storage_bucket_iam_binding" "basic-tf-bucket-sa-binding" {
   role    = "roles/storage.objectAdmin"
   members = local.tf-bucket-accessibles
 }
-resource "google_storage_bucket_iam_binding" "secret-bucket-access-binding"{
+resource "google_storage_bucket_iam_binding" "secret-bucket-access-binding" {
   bucket  = "mitou-jr-secret"
   role    = "roles/storage.objectAdmin"
   members = local.secret-accessibles
 }
 
-resource "google_storage_bucket_iam_binding" "main-bucket-access-binding"{
+resource "google_storage_bucket_iam_binding" "main-bucket-access-binding" {
   bucket  = "mitou-jr"
   role    = "roles/storage.objectAdmin"
-  members = concat(local.secret-accessibles,local.main-bucket-accessibles)
+  members = concat(local.secret-accessibles, local.main-bucket-accessibles)
 }

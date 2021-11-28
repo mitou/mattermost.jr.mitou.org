@@ -4,8 +4,8 @@ resource "google_kms_key_ring" "primary-keyring" {
 }
 
 resource "google_kms_crypto_key" "primary-key" {
-  name            = "primary-key"
-  key_ring        = google_kms_key_ring.primary-keyring.id
+  name     = "primary-key"
+  key_ring = google_kms_key_ring.primary-keyring.id
 
   lifecycle {
     prevent_destroy = true

@@ -11,11 +11,11 @@ locals {
     "user:nishio.hirokazu@gmail.com",
   ]
 
-  project-viewers-and-admin = concat(local.project-viewers,local.admin-access)
-  
+  project-viewers-and-admin = concat(local.project-viewers, local.admin-access)
+
   sa-keyuser = [
-      "serviceAccount:service-233207969476@container-engine-robot.iam.gserviceaccount.com",
-      "serviceAccount:${google_service_account.wi-mattermost-primary.email}"
+    "serviceAccount:service-233207969476@container-engine-robot.iam.gserviceaccount.com",
+    "serviceAccount:${google_service_account.wi-mattermost-primary.email}"
   ]
   sa-tfplanners = [
     "serviceAccount:${google_service_account.sa-ga-iam-applier.email}",
@@ -24,11 +24,11 @@ locals {
   ]
 
   workloadIdenitiyUsers = [
-  {
-    gsa = "${google_service_account.wi-mattermost-primary.name}",
-    ksa_namespace = "mattermost",
-    ksa_name = "mattermost-primary"
-  }
+    {
+      gsa           = "${google_service_account.wi-mattermost-primary.name}",
+      ksa_namespace = "mattermost",
+      ksa_name      = "mattermost-primary"
+    }
   ]
 }
 resource "google_project_iam_binding" "viewers" {
@@ -41,7 +41,7 @@ resource "google_project_iam_binding" "viewers" {
 resource "google_project_iam_binding" "tf-planners" {
   role    = "projects/mitou-jr/roles/tfplanner"
   project = "mitou-jr"
-  members = concat(local.project-viewers-and-admin,local.sa-tfplanners)
+  members = concat(local.project-viewers-and-admin, local.sa-tfplanners)
 }
 
 variable "applier-iam-sa-iam-roles" {
@@ -80,16 +80,16 @@ resource "google_project_iam_binding" "iam-binding-basic-applier" {
 
 
 resource "google_project_iam_binding" "kms-key-users" {
-  project  = "mitou-jr"
-  members  = concat(local.admin-access,local.sa-keyuser)
-  role     = "roles/cloudkms.cryptoKeyEncrypterDecrypter"
+  project = "mitou-jr"
+  members = concat(local.admin-access, local.sa-keyuser)
+  role    = "roles/cloudkms.cryptoKeyEncrypterDecrypter"
 }
 
 resource "google_service_account_iam_binding" "wi-bindings" {
-  for_each = { for i in local.workloadIdenitiyUsers : "${i.ksa_namespace}/${i.ksa_name}" => i }
-  role = "roles/iam.workloadIdentityUser"
+  for_each           = { for i in local.workloadIdenitiyUsers : "${i.ksa_namespace}/${i.ksa_name}" => i }
+  role               = "roles/iam.workloadIdentityUser"
   service_account_id = each.value.gsa
-  members  = [
-      "serviceAccount:mitou-jr.svc.id.goog[${each.value.ksa_namespace}/${each.value.ksa_name}]"
+  members = [
+    "serviceAccount:mitou-jr.svc.id.goog[${each.value.ksa_namespace}/${each.value.ksa_name}]"
   ]
 }
