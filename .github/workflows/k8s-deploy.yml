@@ -1,10 +1,9 @@
 name: Deploy(K8S)
 
 on:
-  - push
-  # pull_request:
-  #   branches:
-  #     - master
+  push:
+    branches:
+      - master
 
 jobs:
   plan:
