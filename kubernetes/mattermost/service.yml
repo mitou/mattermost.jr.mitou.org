@@ -4,12 +4,12 @@ metadata:
   name: mattermost
   namespace: mattermost
   annotations:
-    cloud.google.com/neg: '{"ingress": true}'
+    cloud.google.com/neg: '{"exposed_ports": {"8000":{"name": "mattermost"}}}'
 spec:
   type: ClusterIP
   selector:
     app: mattermost
   ports:
   - protocol: TCP
-    port: 80
+    port: 8000
     targetPort: 8000

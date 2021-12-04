@@ -1,9 +1,9 @@
 resource "google_project" "gcp_project" {
-    
-  name       = "MitouJr"
-  project_id = "mitou-jr"
-  billing_account     = "${var.billing_account}"
-  skip_delete = true
+
+  name            = "MitouJr"
+  project_id      = "mitou-jr"
+  billing_account = var.billing_account
+  skip_delete     = true
 }
 
 resource "google_project_service" "compute" {
@@ -39,6 +39,12 @@ resource "google_project_service" "sql_admin" {
 
 resource "google_project_service" "cloud_kms" {
   service = "cloudkms.googleapis.com"
+
+  disable_dependent_services = true
+}
+
+resource "google_project_service" "dns" {
+  service = "dns.googleapis.com"
 
   disable_dependent_services = true
 }
