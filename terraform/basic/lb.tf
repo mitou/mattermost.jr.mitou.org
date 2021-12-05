@@ -1,11 +1,12 @@
 resource "google_compute_health_check" "http-health-check" {
   name = "http-health-check"
 
-  timeout_sec        = 1
-  check_interval_sec = 1
+  timeout_sec        = 3
+  check_interval_sec = 3
 
   http_health_check {
-    port_specification = "USE_SERVING_PORT"
+    request_path = "/api/v4/system/ping"
+    port         = 8000
   }
 }
 
@@ -29,7 +30,7 @@ resource "google_compute_url_map" "default" {
   default_service = google_compute_backend_service.default.id
 
   host_rule {
-    hosts        = ["mattermost.jr.mitou.org", "mmtest.kyasbal.me"]
+    hosts        = ["mattermost.jr.mitou.org"]
     path_matcher = "primary"
   }
   path_matcher {
@@ -59,7 +60,7 @@ resource "google_compute_managed_ssl_certificate" "default" {
   name = "primary-cert"
 
   managed {
-    domains = ["mmtest.kyasbal.me."] # TODO: 変更
+    domains = ["mattermost.jr.mitou.org."] # TODO: 変更
   }
 }
 
