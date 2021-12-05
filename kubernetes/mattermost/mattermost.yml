@@ -36,13 +36,13 @@ spec:
         # command: ["/bin/sh","-c"]
         # args:
         #   - sleep 10000
-        # resources:
-        #   limits:
-        #     cpu: 250m
-        #     memory: 512m
-        #   requests:
-        #     cpu: 250m
-        #     memory: 512m
+        resources:
+          limits:
+            cpu: 500m
+            memory: 1Gi
+          requests:
+            cpu: 500m
+            memory: 1Gi
         volumeMounts:
           - name: config
             mountPath: /mattermost/config/

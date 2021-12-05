@@ -11,5 +11,5 @@ resource "google_dns_record_set" "primary-a-record" {
 
   managed_zone = google_dns_managed_zone.primary-zone.name
 
-  rrdatas = ["163.43.120.164"] # TODO: replace this old ip
+  rrdatas = [google_compute_global_address.lb-address.address] # TODO: replace this old ip
 }
