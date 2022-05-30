@@ -33,9 +33,6 @@ spec:
         image: mattermost/mattermost-team-edition:release-6.0
         ports:
         - containerPort: 8000
-        # command: ["/bin/sh","-c"]
-        # args:
-        #   - sleep 10000
         resources:
           limits:
             cpu: 500m
