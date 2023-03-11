@@ -1,0 +1,10 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: mattermost-pdb
+spec:
+  maxSurge: 1
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: mattermost
