@@ -6,6 +6,11 @@ metadata:
   labels:
     app: mattermost
 spec:
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
   replicas: 1
   selector:
     matchLabels:
@@ -49,8 +54,3 @@ spec:
         - name: secret
           secret:
             secretName: secret-configs
-      strategy:
-        type: RollingUpdate
-        rollingUpdate:
-          maxUnavailable: 0
-          maxSurge: 1
