@@ -21,12 +21,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Check diff
-        id: diff
-        uses: technote-space/get-diff-action@v5.0.2
-        with:
-          PATTERNS: |
-            ${{ matrix.dir }}/**/*.*
+      # - name: Check diff
+      #   id: diff
+      #   uses: technote-space/get-diff-action@v5.0.2
+      #   with:
+      #     PATTERNS: |
+      #       ${{ matrix.dir }}/**/*.*
       - name: Authenticate to GCP
         if: env. GIT_DIFF_FILTERED
         id: gcp_auth
@@ -46,5 +46,6 @@ jobs:
         if: env. GIT_DIFF_FILTERED
         run: |-
           gcloud config set core/project mitou-jr
+          gcloud components install gke-gcloud-auth-plugin
           gcloud container clusters get-credentials primary-cluster --region asia-northeast1
           kubectl apply -f ./kubernetes/mattermost/
