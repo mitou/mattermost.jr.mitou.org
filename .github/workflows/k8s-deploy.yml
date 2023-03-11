@@ -43,6 +43,7 @@ jobs:
           gcloud auth login --brief --cred-file="${{ steps.gcp_auth.outputs.credentials_file_path }}"
       
       - name: Deploy
+        if: env. GIT_DIFF_FILTERED
         run: |-
           gcloud config set core/project mitou-jr
           gcloud container clusters get-credentials primary-cluster --region asia-northeast1
