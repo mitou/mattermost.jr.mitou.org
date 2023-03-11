@@ -30,7 +30,7 @@ jobs:
       - name: Authenticate to GCP
         if: env. GIT_DIFF_FILTERED
         id: gcp_auth
-        uses: google-github-actions/auth@v0.3.1
+        uses: google-github-actions/auth@v1.0.0
         with:
           create_credentials_file: 'true'
           workload_identity_provider: projects/233207969476/locations/global/workloadIdentityPools/github-action/providers/github-action-provider
