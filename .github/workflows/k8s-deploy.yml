@@ -32,20 +32,15 @@ jobs:
         id: gcp_auth
         uses: google-github-actions/auth@v1.0.0
         with:
-          create_credentials_file: 'true'
           workload_identity_provider: projects/233207969476/locations/global/workloadIdentityPools/github-action/providers/github-action-provider
           service_account: ga-basic-applier@mitou-jr.iam.gserviceaccount.com
           access_token_lifetime: 1200s
-
-      - name: gcloud auth login by workload identity
-        # if: env. GIT_DIFF_FILTERED
-        run: |-
-          gcloud auth login --brief --cred-file="${{ steps.gcp_auth.outputs.credentials_file_path }}"
-      
+      - name: Get credentials
+        uses: google-github-actions/get-gke-credentials@v1
+        with:
+          cluster_name: primary-cluster
+          location: asia-northeast1
       - name: Deploy
         # if: env. GIT_DIFF_FILTERED
         run: |-
-          gcloud config set core/project mitou-jr
-          sudo apt-get install google-cloud-sdk-gke-gcloud-auth-plugin
-          gcloud container clusters get-credentials primary-cluster --region asia-northeast1
           kubectl apply -f ./kubernetes/mattermost/
