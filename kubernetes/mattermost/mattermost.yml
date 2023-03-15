@@ -37,7 +37,9 @@ spec:
       - name: mattermost
         image: mattermost/mattermost-team-edition:release-7.9
         ports:
-        - containerPort: 8000
+        - name: http
+          containerPort: 8000
+          protocol: TCP
         resources:
           limits:
             cpu: 500m
@@ -45,6 +47,20 @@ spec:
           requests:
             cpu: 500m
             memory: 1Gi
+        livenessProbe:
+          initialDelaySeconds: 90
+          timeoutSeconds: 5
+          periodSeconds: 15
+          failureThreshold: 4
+          httpGet:
+            path:  /api/v4/system/ping
+            port: http
+        readinessProbe:
+          timeoutSeconds: 5
+          periodSeconds: 15
+          httpGet:
+            path:  /api/v4/system/ping
+            port: http
         volumeMounts:
           - name: config
             mountPath: /mattermost/config/
