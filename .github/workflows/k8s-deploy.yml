@@ -44,3 +44,4 @@ jobs:
         # if: env. GIT_DIFF_FILTERED
         run: |-
           kubectl apply -f ./kubernetes/mattermost/
+          kubectl -n mattermost rollout restart deployment mattermost
