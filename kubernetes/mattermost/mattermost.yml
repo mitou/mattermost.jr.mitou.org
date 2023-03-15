@@ -47,24 +47,11 @@ spec:
           requests:
             cpu: 500m
             memory: 1Gi
-        startupProbe:
-          timeoutSeconds: 5
-          periodSeconds: 10
-          failureThreshold: 100
-          httpGet:
-            path:  /api/v4/system/ping
-            port: http
         livenessProbe:
-          initialDelaySeconds: 90
+          initialDelaySeconds: 600
           timeoutSeconds: 5
           periodSeconds: 15
           failureThreshold: 4
-          httpGet:
-            path:  /api/v4/system/ping
-            port: http
-        readinessProbe:
-          timeoutSeconds: 5
-          periodSeconds: 15
           httpGet:
             path:  /api/v4/system/ping
             port: http
