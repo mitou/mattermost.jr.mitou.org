@@ -19,6 +19,17 @@ resource "google_compute_backend_service" "default" {
     balancing_mode = "RATE"
     max_rate       = 10000
   }
+  backend {
+    group          = "projects/mitou-jr/zones/asia-northeast1-b/networkEndpointGroups/mattermost"
+    balancing_mode = "RATE"
+    max_rate       = 10000
+  }
+
+  backend {
+    group          = "projects/mitou-jr/zones/asia-northeast1-c/networkEndpointGroups/mattermost"
+    balancing_mode = "RATE"
+    max_rate       = 10000
+  }
 
 }
 
