@@ -74,25 +74,3 @@ resource "google_compute_managed_ssl_certificate" "default" {
     domains = ["mattermost.jr.mitou.org."] # TODO: 変更
   }
 }
-
-resource "google_compute_url_map" "http-to-https" {
-  name = "http-to-https-redirect"
-
-  default_url_redirect {
-    https_redirect         = true
-    strip_query            = false
-    redirect_response_code = "PERMANENT_REDIRECT"
-  }
-}
-
-resource "google_compute_target_http_proxy" "proxy" {
-  name    = "my-http-proxy"
-  url_map = google_compute_url_map.http-to-https.self_link
-}
-
-resource "google_compute_global_forwarding_rule" "http-redirect" {
-  name       = "my-fwrule-http-v4"
-  target     = google_compute_target_http_proxy.proxy.self_link
-  ip_address = google_compute_global_address.lb-address.address
-  port_range = "80"
-}
