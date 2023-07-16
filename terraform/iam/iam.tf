@@ -3,6 +3,7 @@
 locals {
   projectid = "mitou-jr"
   project-viewers = [
+    "user:sminemoto@ho.mitou.org",
     "serviceAccount:${google_service_account.sa-ga-planner.email}"
   ]
 
@@ -91,5 +92,13 @@ resource "google_service_account_iam_binding" "wi-bindings" {
   service_account_id = each.value.gsa
   members = [
     "serviceAccount:mitou-jr.svc.id.goog[${each.value.ksa_namespace}/${each.value.ksa_name}]"
+  ]
+}
+
+resource "google_project_iam_binding" "monitoring-pubsub" {
+  role               = "roles/pubsub.publisher"
+  project  = "mitou-jr"
+  members = [
+    "serviceAccount:service-233207969476@gcp-sa-monitoring-notification.iam.gserviceaccount.com"
   ]
 }

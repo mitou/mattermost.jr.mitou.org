@@ -48,3 +48,15 @@ resource "google_project_service" "dns" {
 
   disable_dependent_services = true
 }
+
+resource "google_project_service" "functions" {
+  service = "cloudfunctions.googleapis.com"
+
+  disable_dependent_services = true
+}
+
+resource "google_project_service" "build" {
+  service = "cloudbuild.googleapis.com"
+
+  disable_dependent_services = true
+}
