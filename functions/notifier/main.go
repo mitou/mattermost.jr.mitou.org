@@ -70,7 +70,7 @@ func generateMattermostMessage(notification *CloudMonitoringIncidentNotification
 		color = "#FF0000"
 	}
 	msg.AddAttachment(matterhook.Attachment{
-		Title:     "Uptime check alert",
+		Title:     "Alert triggered by Cloud Monitoring",
 		Text:      notification.Incident.Summary,
 		Color:     color,
 		TitleLink: notification.Incident.Url,
