@@ -10,6 +10,7 @@ locals {
   admin-access = [
     "user:kyasbal1994@gmail.com",
     "user:nishio.hirokazu@gmail.com",
+    "user:xpadev@gmail.com",
   ]
 
   project-viewers-and-admin = concat(local.project-viewers, local.admin-access)
