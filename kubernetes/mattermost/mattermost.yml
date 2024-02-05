@@ -66,9 +66,14 @@ spec:
         volumeMounts:
           - name: config
             mountPath: /mattermost/config/
+          - name: bleve-cache
+            mountPath: /mattermost/bleve/
       volumes:
         - name: config
           emptyDir: {}
         - name: secret
           secret:
             secretName: secret-configs
+        - name: bleve-cache
+          persistentVolumeClaim:
+            claimName: mattermost-bleve-pvc
