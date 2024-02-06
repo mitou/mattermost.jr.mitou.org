@@ -20,6 +20,8 @@ spec:
       labels:
         app: mattermost
     spec:
+      securityContext: 
+        fsGroup: 2000
       serviceAccountName: mattermost-primary
       initContainers:
         - name: secret-placer
