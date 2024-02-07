@@ -29,7 +29,7 @@ spec:
           command: ["/bin/sh","-c"]
           args:
             - gcloud kms decrypt --location asia-northeast1 --keyring primary-keyring --key primary-key --ciphertext-file=/secret/config.json --plaintext-file=/config/config.json
-              && chmod o+w /config/config.json
+              && chown 2000:2000 /config/config.json
           volumeMounts:
             - name: config
               mountPath: /config
