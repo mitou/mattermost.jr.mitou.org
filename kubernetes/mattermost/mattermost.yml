@@ -65,6 +65,12 @@ spec:
           httpGet:
             path:  /api/v4/system/ping
             port: http
+        startupProbe:
+          httpGet:
+            path:  /api/v4/system/ping
+            port: http
+          failureThreshold: 360
+          periodSeconds: 10
         volumeMounts:
           - name: config
             mountPath: /mattermost/config/
