@@ -58,7 +58,7 @@ spec:
             path:  /api/v4/system/ping
             port: http
         livenessProbe:
-          initialDelaySeconds: 600
+          initialDelaySeconds: 3600
           timeoutSeconds: 5
           periodSeconds: 15
           failureThreshold: 4
