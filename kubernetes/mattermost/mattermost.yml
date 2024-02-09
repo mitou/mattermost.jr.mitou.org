@@ -69,7 +69,7 @@ spec:
           httpGet:
             path:  /api/v4/system/ping
             port: http
-          failureThreshold: 360
+          failureThreshold: 8640
           periodSeconds: 10
         volumeMounts:
           - name: config
