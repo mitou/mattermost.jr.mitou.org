@@ -63,6 +63,12 @@ resource "google_project_iam_binding" "iam-binding-iam-applier" {
   ]
 }
 
+resource "google_project_iam_binding" "iam-binding-k8s-operation" {
+   role    = "roles/container.developer"
+   project = "mitou-jr"
+   members = local.admin-access
+}
+
 variable "basic-sa-iam-roles" {
   type = set(string)
   default = [
