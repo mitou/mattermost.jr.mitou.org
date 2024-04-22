@@ -90,9 +90,14 @@ spec:
         volumeMounts:
           - name: config
             mountPath: /mattermost/config/
+          - name: bleve
+            mountPath: /mattermost/bleve/
       volumes:
         - name: config
           emptyDir: {}
+        - name: bleve
+          emptyDir:
+            sizeLimit: 2Gi
         - name: secret
           secret:
             secretName: secret-configs
