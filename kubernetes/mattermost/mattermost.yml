@@ -45,7 +45,7 @@ spec:
           - name: MATTERMOST_TOKEN
             valueFrom:
               secretKeyRef:
-                name: secret-configs
+                name: gcp-secret-env
                 key: MATTERMOST_TOKEN
         ports:
         - name: http
@@ -100,4 +100,4 @@ spec:
             sizeLimit: 2Gi
         - name: secret
           secret:
-            secretName: secret-configs
+            secretName: gcp-secret-config
