@@ -18,3 +18,8 @@ resource "google_service_account" "wi-mattermost-primary" {
   account_id   = "wi-mattermost-primary"
   display_name = "Mattermostのワークロードで使うWorkload Identity"
 }
+
+resource "google_service_account" "wi-secret-mattermost-primary" {
+  account_id   = "wi-secret-mattermost-primary"
+  display_name = "MattermostのExternalSecretOperatorで使うWorkload Identity"
+}

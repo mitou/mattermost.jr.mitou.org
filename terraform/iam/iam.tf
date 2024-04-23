@@ -30,6 +30,11 @@ locals {
       gsa           = "${google_service_account.wi-mattermost-primary.name}",
       ksa_namespace = "mattermost",
       ksa_name      = "mattermost-primary"
+    },
+    {
+      gsa           = "${google_service_account.wi-secret-mattermost-primary.name}",
+      ksa_namespace = "mattermost",
+      ksa_name      = "mattermost-primary"
     }
   ]
 }
@@ -107,5 +112,13 @@ resource "google_project_iam_binding" "monitoring-pubsub" {
   project  = "mitou-jr"
   members = [
     "serviceAccount:service-233207969476@gcp-sa-monitoring-notification.iam.gserviceaccount.com"
+  ]
+}
+
+resource "google_service_account_iam_binding" "secret-manager" {
+  service_account_id = google_service_account.wi-secret-mattermost-primary.id
+  role               = "roles/secretmanager.secretAccessor"
+  members = [
+    "serviceAccount:mitou-jr.svc.id.goog[mattermost/mattermost-primary]"
   ]
 }
