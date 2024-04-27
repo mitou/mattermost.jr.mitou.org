@@ -82,10 +82,8 @@ spec:
             mountPath: /mattermost/bleve/
       volumes:
         - name: config
-          emptyDir: {}
+          secret:
+            secretName: gcp-secret-config
         - name: bleve
           emptyDir:
             sizeLimit: 2Gi
-        - name: secret
-          secret:
-            secretName: gcp-secret-config
