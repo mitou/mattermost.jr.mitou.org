@@ -25,6 +25,18 @@ spec:
       serviceAccountName: mattermost-primary
       readinessGates:
       - conditionType: bleve-ready
+      initContainers:
+        - name: secret-placer
+          image: busybox
+          command: ["/bin/sh","-c"]
+          args:
+            - cp /secret/config.json /config/config.json
+              && chown 2000:2000 /config/config.json
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: secret
+              mountPath: /secret
       containers:
       - name: mattermost
         image: mattermost/mattermost-team-edition:release-9.1
@@ -82,8 +94,10 @@ spec:
             mountPath: /mattermost/bleve/
       volumes:
         - name: config
-          secret:
-            secretName: gcp-secret-config
+          emptyDir: {}
         - name: bleve
           emptyDir:
             sizeLimit: 2Gi
+        - name: secret
+          secret:
+            secretName: gcp-secret-config
