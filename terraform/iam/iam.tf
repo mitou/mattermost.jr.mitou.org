@@ -34,7 +34,7 @@ locals {
     {
       gsa           = "${google_service_account.wi-secret-mattermost-primary.name}",
       ksa_namespace = "mattermost",
-      ksa_name      = "mattermost-primary"
+      ksa_name      = "secret-mattermost-primary"
     }
   ]
 }
