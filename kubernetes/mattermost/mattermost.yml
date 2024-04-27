@@ -25,18 +25,6 @@ spec:
       serviceAccountName: mattermost-primary
       readinessGates:
       - conditionType: bleve-ready
-      initContainers:
-        - name: secret-placer
-          image: gcr.io/google.com/cloudsdktool/cloud-sdk:latest
-          command: ["/bin/sh","-c"]
-          args:
-            - gcloud kms decrypt --location asia-northeast1 --keyring primary-keyring --key primary-key --ciphertext-file=/secret/config.json --plaintext-file=/config/config.json
-              && chown 2000:2000 /config/config.json
-          volumeMounts:
-            - name: config
-              mountPath: /config
-            - name: secret
-              mountPath: /secret
       containers:
       - name: mattermost
         image: mattermost/mattermost-team-edition:release-9.1
