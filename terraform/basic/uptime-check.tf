@@ -1,5 +1,5 @@
 resource "google_monitoring_uptime_check_config" "https_check" {
-  provider = google-beta
+  provider     = google-beta
   display_name = "Health check for Mattermost server"
   timeout      = "10s"
   period       = "60s"
@@ -23,7 +23,7 @@ resource "google_monitoring_uptime_check_config" "https_check" {
     type = "uptime_url"
     labels = {
       project_id = "mitou-jr"
-      host       = "mattermost.jr.mitou.org"  # 監視対象のホスト名またはIPアドレスを記載します
+      host       = "mattermost.jr.mitou.org" # 監視対象のホスト名またはIPアドレスを記載します
     }
   }
 
@@ -45,7 +45,7 @@ resource "google_monitoring_alert_policy" "https_check_alert" {
       # filter に 稼働時間チェックの指標を指定して、関連づけています。
       filter          = "resource.type = \"uptime_url\" AND metric.type = \"monitoring.googleapis.com/uptime_check/check_passed\" AND metric.labels.check_id = \"${google_monitoring_uptime_check_config.https_check.uptime_check_id}\""
       duration        = "0s"
-      threshold_value = 1  # 失敗が1回より多くなったときにアラートを通知
+      threshold_value = 1 # 失敗が1回より多くなったときにアラートを通知
       comparison      = "COMPARISON_GT"
       aggregations {
         alignment_period     = "1200s"
@@ -63,7 +63,7 @@ resource "google_monitoring_alert_policy" "https_check_alert" {
     google_monitoring_notification_channel.default.id,
     google_monitoring_notification_channel.email.id
   ]
-  enabled     = true
+  enabled = true
 
   depends_on = [
     google_monitoring_uptime_check_config.https_check

@@ -30,6 +30,11 @@ locals {
       gsa           = "${google_service_account.wi-mattermost-primary.name}",
       ksa_namespace = "mattermost",
       ksa_name      = "mattermost-primary"
+    },
+    {
+      gsa           = "${google_service_account.wi-secret-mattermost-primary.name}",
+      ksa_namespace = "mattermost",
+      ksa_name      = "secret-mattermost-primary"
     }
   ]
 }
@@ -64,9 +69,9 @@ resource "google_project_iam_binding" "iam-binding-iam-applier" {
 }
 
 resource "google_project_iam_binding" "iam-binding-k8s-operation" {
-   role    = "roles/container.developer"
-   project = "mitou-jr"
-   members = local.admin-access
+  role    = "roles/container.developer"
+  project = "mitou-jr"
+  members = local.admin-access
 }
 
 variable "basic-sa-iam-roles" {
@@ -103,9 +108,17 @@ resource "google_service_account_iam_binding" "wi-bindings" {
 }
 
 resource "google_project_iam_binding" "monitoring-pubsub" {
-  role               = "roles/pubsub.publisher"
-  project  = "mitou-jr"
+  role    = "roles/pubsub.publisher"
+  project = "mitou-jr"
   members = [
     "serviceAccount:service-233207969476@gcp-sa-monitoring-notification.iam.gserviceaccount.com"
+  ]
+}
+
+resource "google_service_account_iam_binding" "secret-manager" {
+  service_account_id = google_service_account.wi-secret-mattermost-primary.id
+  role               = "roles/secretmanager.secretAccessor"
+  members = [
+    "serviceAccount:mitou-jr.svc.id.goog[mattermost/mattermost-primary]"
   ]
 }
