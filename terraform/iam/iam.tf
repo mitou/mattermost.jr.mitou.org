@@ -117,7 +117,7 @@ resource "google_project_iam_binding" "monitoring-pubsub" {
 
 resource "google_project_iam_binding" "secret-manager" {
   project = "mitou-jr"
-  role               = "roles/secretmanager.secretAccessor"
+  role    = "roles/secretmanager.secretAccessor"
   members = [
     "serviceAccount:${google_service_account.wi-secret-mattermost-primary.email}",
   ]
