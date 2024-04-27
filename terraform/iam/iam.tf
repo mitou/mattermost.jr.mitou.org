@@ -33,8 +33,8 @@ locals {
     },
     {
       gsa           = "${google_service_account.wi-secret-mattermost-primary.name}",
-      ksa_namespace = "mattermost",
-      ksa_name      = "secret-mattermost-primary"
+      ksa_namespace = "default",
+      ksa_name      = "external-secrets"
     }
   ]
 }
