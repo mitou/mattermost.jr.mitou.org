@@ -115,10 +115,10 @@ resource "google_project_iam_binding" "monitoring-pubsub" {
   ]
 }
 
-resource "google_service_account_iam_binding" "secret-manager" {
-  service_account_id = google_service_account.wi-secret-mattermost-primary.id
+resource "google_project_iam_binding" "secret-manager" {
+  project = "mitou-jr"
   role               = "roles/secretmanager.secretAccessor"
   members = [
-    "serviceAccount:mitou-jr.svc.id.goog[mattermost/mattermost-primary]"
+    "serviceAccount:${google_service_account.wi-secret-mattermost-primary.email}",
   ]
 }
