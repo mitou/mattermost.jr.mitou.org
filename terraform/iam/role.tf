@@ -28,3 +28,10 @@ resource "google_project_iam_custom_role" "tfplanner" {
     "dns.responsePolicyRules.list",
   ]
 }
+
+resource "google_project_iam_custom_role" "pod_status_updater" {
+  role_id     = "podStatusUpdater"
+  title       = "Pod Status Updater"
+  description = "Allows updating pod status"
+  permissions = ["container.pods.updateStatus"]
+}

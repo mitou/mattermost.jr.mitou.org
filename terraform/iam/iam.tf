@@ -122,3 +122,10 @@ resource "google_project_iam_binding" "secret-manager" {
     "serviceAccount:${google_service_account.wi-secret-mattermost-primary.email}",
   ]
 }
+
+resource "google_project_iam_binding" "pod_status_updater_binding" {
+  role = google_project_iam_custom_role.pod_status_updater.id
+  members = [
+    "serviceAccount:${google_service_account.wi-mattermost-primary.email}",
+  ]
+}
