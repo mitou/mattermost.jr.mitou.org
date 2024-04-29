@@ -124,6 +124,7 @@ resource "google_project_iam_binding" "secret-manager" {
 }
 
 resource "google_project_iam_binding" "pod_status_updater_binding" {
+  project = "mitou-jr"
   role = google_project_iam_custom_role.pod_status_updater.id
   members = [
     "serviceAccount:${google_service_account.wi-mattermost-primary.email}",
