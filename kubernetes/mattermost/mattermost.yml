@@ -55,9 +55,11 @@ spec:
           limits:
             cpu: 500m
             memory: 2Gi
+            ephemeral-storage: 4096Mi
           requests:
             cpu: 500m
             memory: 2Gi
+            ephemeral-storage: 4096Mi
         lifecycle:
           postStart:
             exec:
@@ -93,6 +95,8 @@ spec:
           - name: bleve
             mountPath: /mattermost/bleve/
       volumes:
+        - name: data
+          emptyDir: {}
         - name: config
           emptyDir: {}
         - name: bleve
