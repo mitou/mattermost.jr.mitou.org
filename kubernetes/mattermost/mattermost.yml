@@ -39,7 +39,7 @@ spec:
               mountPath: /secret
       containers:
       - name: mattermost
-        image: mattermost/mattermost-team-edition:release-9.6
+        image: mattermost/mattermost-team-edition:9.7
         imagePullPolicy: Always
         env:
           - name: MATTERMOST_TOKEN
