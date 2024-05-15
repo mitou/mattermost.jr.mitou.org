@@ -46,12 +46,12 @@ spec:
                   key: MATTERMOST_TOKEN
           resources:
             limits:
-              cpu: 500m
-              memory: 2Gi
+              cpu: 1000m
+              memory: 4Gi
               ephemeral-storage: 4096Mi
             requests:
-              cpu: 500m
-              memory: 2Gi
+              cpu: 1000m
+              memory: 4Gi
               ephemeral-storage: 4096Mi
           command: [
             "/usr/bin/bash",
