@@ -23,8 +23,6 @@ spec:
       securityContext: 
         fsGroup: 2000
       serviceAccountName: mattermost-primary
-      readinessGates:
-      - conditionType: bleve-ready
       initContainers:
         - name: secret-placer
           image: busybox
@@ -37,16 +35,40 @@ spec:
               mountPath: /config
             - name: secret
               mountPath: /secret
+        - name: mattermost
+          image: mattermost/mattermost-team-edition:9.7
+          imagePullPolicy: Always
+          env:
+            - name: MATTERMOST_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: gcp-secret-env
+                  key: MATTERMOST_TOKEN
+          resources:
+            limits:
+              cpu: 500m
+              memory: 2Gi
+              ephemeral-storage: 4096Mi
+            requests:
+              cpu: 500m
+              memory: 2Gi
+              ephemeral-storage: 4096Mi
+          command: [
+            "/usr/bin/bash",
+            "-c",
+            '((mattermost > /dev/null &);max_retries=60; retry_delay=10; retries=0; result=1; while [[ $retries -lt $max_retries && $result -ne 0 ]]; do ((retries++)); echo "retry $retries/$max_retries..."; curl http://localhost:8000/api/v4/system/ping -s; result=$?; if [[ $result -ne 0 ]]; then echo "retry"; sleep $retry_delay; fi; done; if [[ $result -ne 0 ]]; then echo "startup timeout";exit 1;fi;echo "ping success"; response=$(curl -s -i -H "Authorization: Bearer $MATTERMOST_TOKEN" http://localhost:8000/api/v4/jobs -X POST -d ''{"type":"bleve_post_indexing"}'' | grep bleve_post_indexing);if [[ "$response" == "" ]]; then echo "failed to create job";echo "$response" exit 1;fi;echo "job created"; max_retries=864; retry_delay=10; retries=0; result=""; while [[ $retries -lt $max_retries && "$result" == "" ]]; do ((retries++)); echo "wait for index $retries/$max_retries..."; response=$(curl -s "http://localhost:8000/api/v4/jobs/type/bleve_post_indexing?page=0&per_page=1" -H "Authorization: Bearer $MATTERMOST_TOKEN" | grep success); result=$response; if [[ "$result" == "" ]]; then echo "index not completed"; sleep $retry_delay; fi; done; if [[ "$result" == "" ]]; then echo "index timeout"; exit 1;else echo "index success"; fi;) > /var/tmp/post-start.log 2>&1'
+          ]
+          volumeMounts:
+            - name: config
+              mountPath: /mattermost/config/
+            - name: bleve
+              mountPath: /mattermost/bleve/
+            - name: data
+              mountPath: /mattermost/data/
       containers:
       - name: mattermost
         image: mattermost/mattermost-team-edition:9.7
         imagePullPolicy: Always
-        env:
-          - name: MATTERMOST_TOKEN
-            valueFrom:
-              secretKeyRef:
-                name: gcp-secret-env
-                key: MATTERMOST_TOKEN
         ports:
         - name: http
           containerPort: 8000
@@ -60,14 +82,6 @@ spec:
             cpu: 500m
             memory: 2Gi
             ephemeral-storage: 4096Mi
-        lifecycle:
-          postStart:
-            exec:
-              command: [
-                "/usr/bin/bash",
-                "-c",
-                '(max_retries=60; retry_delay=10; retries=0; result=1; while [[ $retries -lt $max_retries && $result -ne 0 ]]; do ((retries++)); echo "retry $retries/$max_retries..."; curl http://localhost:8000/api/v4/system/ping -s; result=$?; if [[ $result -ne 0 ]]; then echo "retry"; sleep $retry_delay; fi; done; if [[ $result -ne 0 ]]; then echo "startup timeout";exit 1;fi;echo "ping success"; response=$(curl -s -i -H "Authorization: Bearer $MATTERMOST_TOKEN" http://localhost:8000/api/v4/jobs -X POST -d ''{"type":"bleve_post_indexing"}'' | grep bleve_post_indexing);if [[ "$response" == "" ]]; then echo "failed to create job";echo "$response" exit 1;fi;echo "job created"; max_retries=864; retry_delay=10; retries=0; result=""; while [[ $retries -lt $max_retries && "$result" == "" ]]; do ((retries++)); echo "wait for index $retries/$max_retries..."; response=$(curl -s "http://localhost:8000/api/v4/jobs/type/bleve_post_indexing?page=0&per_page=1" -H "Authorization: Bearer $MATTERMOST_TOKEN" | grep success); result=$response; if [[ "$result" == "" ]]; then echo "index not completed"; sleep $retry_delay; fi; done; if [[ "$result" == "" ]]; then echo "index timeout"; exit 1;else echo "index success"; fi; curl -s https://kubernetes.default.svc/api/v1/namespaces/$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)/pods/$(hostname)/status -X PATCH -H "Content-Type: application/json-patch+json"  -H "Authorization: Bearer $(cat /var/run/secrets/kubernetes.io/serviceaccount/token)" -d ''[{"op": "add", "path": "/status/conditions/-", "value": {"type": "bleve-ready", "status": "True", "lastTransitionTime": "2018-10-16T06:59:45Z", "lastProbeTime": null}}]'' -k) > /var/tmp/post-start.log 2>&1'
-              ]
         readinessProbe:
           timeoutSeconds: 5
           periodSeconds: 5
