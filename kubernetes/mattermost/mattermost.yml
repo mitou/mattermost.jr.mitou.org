@@ -35,7 +35,7 @@ spec:
               mountPath: /config
             - name: secret
               mountPath: /secret
-        - name: mattermost
+        - name: bleve-indexer
           image: mattermost/mattermost-team-edition:9.7
           imagePullPolicy: Always
           env:
