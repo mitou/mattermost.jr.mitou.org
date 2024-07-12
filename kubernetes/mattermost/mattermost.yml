@@ -29,14 +29,17 @@ spec:
           command: ["/bin/sh","-c"]
           args:
             - cp /secret/config.json /config/config.json
-              && chown 2000:2000 /config/config.json
+              && cp /license/mitoujr.mattermost-license /config/mitoujr.mattermost-license
+              && chown 2000:2000 /config/*
           volumeMounts:
             - name: config
               mountPath: /config
             - name: secret
               mountPath: /secret
+            - name: license
+              mountPath: /license
         - name: bleve-indexer
-          image: mattermost/mattermost-team-edition:9.7
+          image: mattermost/mattermost-enterprise-edition:9.7
           imagePullPolicy: Always
           env:
             - name: MATTERMOST_TOKEN
@@ -67,7 +70,7 @@ spec:
               mountPath: /mattermost/data/
       containers:
       - name: mattermost
-        image: mattermost/mattermost-team-edition:9.7
+        image: mattermost/mattermost-enterprise-edition:9.7
         imagePullPolicy: Always
         ports:
         - name: http
@@ -121,3 +124,6 @@ spec:
         - name: secret
           secret:
             secretName: gcp-secret-config
+        - name: license
+          secret:
+            secretName: gcp-secret-license
