@@ -23,6 +23,18 @@ spec:
       securityContext: 
         fsGroup: 2000
       serviceAccountName: mattermost-primary
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - mattermost
+              topologyKey: topology.kubernetes.io/zone
       initContainers:
         - name: secret-placer
           image: busybox
