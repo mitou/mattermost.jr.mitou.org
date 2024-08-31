@@ -1,4 +1,6 @@
 resource "google_container_cluster" "primary" {
+  provider = google-beta
+
   name     = "primary-cluster"
   location = "asia-northeast1"
 
@@ -6,6 +8,11 @@ resource "google_container_cluster" "primary" {
   subnetwork = google_compute_subnetwork.default.id
 
   enable_autopilot = true
+
+  secret_manager_config {
+    enabled = true
+  }
+
   ip_allocation_policy {
     cluster_secondary_range_name  = "pods"
     services_secondary_range_name = "services"
