@@ -25,4 +25,12 @@ resource "google_container_cluster" "primary" {
   release_channel {
     channel = "REGULAR"
   }
+
+  maintenance_policy {
+    recurring_window {
+      start_time = "2019-01-01T17:00:00Z" //+9:00 -> 02:00:00 JST
+      end_time   = "2019-01-01T22:00:00Z" //+9:00 -> 07:00:00 JST
+      recurrence = "FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR"
+    }
+  }
 }
