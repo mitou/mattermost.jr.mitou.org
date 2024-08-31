@@ -6,6 +6,9 @@ resource "google_container_cluster" "primary" {
   subnetwork = google_compute_subnetwork.default.id
 
   enable_autopilot = true
+
+  enable_secret_manager_addon = true
+
   ip_allocation_policy {
     cluster_secondary_range_name  = "pods"
     services_secondary_range_name = "services"
