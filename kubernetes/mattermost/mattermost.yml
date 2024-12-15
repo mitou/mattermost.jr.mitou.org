@@ -73,7 +73,7 @@ spec:
               mountPath: /mattermost/data/
       containers:
       - name: mattermost
-        image: mattermost/mattermost-enterprise-edition:release-9.11
+        image: mattermost/mattermost-enterprise-edition:release-10.2
         imagePullPolicy: Always
         ports:
         - name: http
