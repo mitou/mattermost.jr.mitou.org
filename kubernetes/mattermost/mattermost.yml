@@ -51,7 +51,7 @@ spec:
             - name: license
               mountPath: /license
         - name: bleve-indexer
-          image: mattermost/mattermost-enterprise-edition:release-9.11
+          image: mattermost/mattermost-enterprise-edition:release-10.2
           imagePullPolicy: Always
           env:
             - name: MATTERMOST_TOKEN
