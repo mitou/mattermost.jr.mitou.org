@@ -61,4 +61,4 @@ jobs:
                 branch: update-mattermost-image-${{ steps.get-latest-image.outputs.latest_version }}
                 base: master
                 delete-branch: true
-                reviewers: kurotch321
+                reviewers: kyasbal
