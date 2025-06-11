@@ -51,7 +51,7 @@ spec:
             - name: license
               mountPath: /license
         - name: bleve-indexer
-          image: mattermost/mattermost-enterprise-edition:release-10.5
+          image: mattermost/mattermost-enterprise-edition:release-10.8
           imagePullPolicy: Always
           env:
             - name: MATTERMOST_TOKEN
@@ -73,7 +73,7 @@ spec:
               mountPath: /mattermost/data/
       containers:
       - name: mattermost
-        image: mattermost/mattermost-enterprise-edition:release-10.5
+        image: mattermost/mattermost-enterprise-edition:release-10.8
         imagePullPolicy: Always
         ports:
         - name: http
