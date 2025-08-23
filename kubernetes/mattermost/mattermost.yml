@@ -92,7 +92,7 @@ spec:
                 wget -q --spider --timeout=5 http://localhost:8000/api/v4/system/ping || exit 1
                 # Check if bleve indexing is complete
                 test -f /shared/bleve-index-complete || exit 1
-          failureThreshold: 8640
+          failureThreshold: 360
           periodSeconds: 10
         volumeMounts:
           - name: config
@@ -111,9 +111,15 @@ spec:
               secretKeyRef:
                 name: gcp-secret-env
                 key: MATTERMOST_TOKEN
+          - name: MATTERMOST_WAIT_MAX_RETRIES
+            value: "60"
+          - name: INDEX_WAIT_MAX_RETRIES
+            value: "360"
+          - name: RETRY_DELAY
+            value: "10"
         resources:
           limits:
-            cpu: 100m
+            cpu: 50m
             memory: 128Mi
             ephemeral-storage: 100Mi
           requests:
@@ -126,8 +132,8 @@ spec:
             echo "Starting bleve indexer sidecar..."
             
             # Wait for Mattermost to be ready
-            max_retries=60
-            retry_delay=10
+            max_retries=${MATTERMOST_WAIT_MAX_RETRIES:-60}
+            retry_delay=${RETRY_DELAY:-10}
             retries=0
             result=1
             
@@ -137,12 +143,13 @@ spec:
               wget -q --spider --timeout=5 http://localhost:8000/api/v4/system/ping
               result=$?
               if [ $result -ne 0 ]; then
+                echo "Mattermost not ready yet, retrying in ${retry_delay}s..."
                 sleep $retry_delay
               fi
             done
             
             if [ $result -ne 0 ]; then
-              echo "Mattermost startup timeout"
+              echo "ERROR: Mattermost startup timeout after $((max_retries * retry_delay)) seconds"
               exit 1
             fi
             
@@ -156,34 +163,43 @@ spec:
               http://localhost:8000/api/v4/jobs)
             
             if [ $? -ne 0 ] || ! echo "$response" | grep -q "bleve_post_indexing"; then
-              echo "Failed to create indexing job: $response"
+              echo "ERROR: Failed to create indexing job"
+              echo "Response: $response"
+              echo "HTTP Status: $(echo "$response" | head -n1)"
               exit 1
             fi
             
             echo "Bleve indexing job created, waiting for completion..."
             
             # Wait for job completion
-            max_retries=864
-            retry_delay=10
+            max_retries=${INDEX_WAIT_MAX_RETRIES:-360}
+            retry_delay=${RETRY_DELAY:-10}
             retries=0
             result=""
             
             while [ $retries -lt $max_retries ] && [ "$result" = "" ]; do
               retries=$((retries + 1))
-              echo "Checking index status... $retries/$max_retries"
+              echo "Checking index status... $retries/$max_retries (elapsed: $((retries * retry_delay))s)"
               response=$(wget -q -O- --timeout=30 \
                 --header="Authorization: Bearer $MATTERMOST_TOKEN" \
                 "http://localhost:8000/api/v4/jobs/type/bleve_post_indexing?page=0&per_page=1")
               
               if echo "$response" | grep -q "success"; then
                 result="success"
+                echo "Job status found: success"
+              elif echo "$response" | grep -q "error"; then
+                echo "ERROR: Indexing job failed"
+                echo "Job response: $response"
+                exit 1
               else
+                echo "Job still in progress, checking again in ${retry_delay}s..."
                 sleep $retry_delay
               fi
             done
             
             if [ "$result" = "" ]; then
-              echo "Index completion timeout"
+              echo "ERROR: Index completion timeout after $((max_retries * retry_delay)) seconds"
+              echo "Last response: $response"
               exit 1
             fi
             
@@ -204,7 +220,7 @@ spec:
               - test -f /shared/bleve-index-complete
           initialDelaySeconds: 10
           periodSeconds: 10
-          failureThreshold: 900
+          failureThreshold: 180
       volumes:
         - name: data
           emptyDir: {}
