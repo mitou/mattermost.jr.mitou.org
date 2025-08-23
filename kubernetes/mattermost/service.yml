@@ -5,6 +5,7 @@ metadata:
   namespace: mattermost
   annotations:
     cloud.google.com/neg: '{"exposed_ports": {"80":{"name": "mattermost"}}}'
+    cloud.google.com/backend-config: '{"default": "mattermost-backend-service"}'
 spec:
   type: ClusterIP
   selector:
