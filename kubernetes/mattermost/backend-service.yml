@@ -1,5 +1,5 @@
 apiVersion: cloud.google.com/v1
-kind: BackendService
+kind: BackendConfig
 metadata:
   name: mattermost-backend-service
   namespace: mattermost
