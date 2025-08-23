@@ -1,0 +1,28 @@
+kind: HighAvailabilityApplication
+apiVersion: ha.gke.io/v1
+metadata:
+  name: elasticsearch-ha-es-main
+  namespace: elastic
+spec:
+  resourceSelection:
+    resourceKind: StatefulSet
+  policy:
+    storageSettings:
+      requireRegionalStorage: false
+    failoverSettings:
+      forceDeleteStrategy: AfterNodeUnreachable
+      afterNodeUnreachable:
+        afterNodeUnreachableSeconds: 20 # 60 seconds total
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+allowVolumeExpansion: true
+metadata:
+  name: ha-regional
+parameters:
+  replication-type: regional-pd
+  type: pd-ssd
+  availability-class: regional-hard-failover
+provisioner: pd.csi.storage.gke.io
+reclaimPolicy: Retain
+volumeBindingMode: WaitForFirstConsumer
