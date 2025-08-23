@@ -33,7 +33,7 @@ spec:
                 ]
           containers:
             - name: metrics
-              image: quay.io/prometheuscommunity/elasticsearch-exporter:v1.7.0
+              image: quay.io/prometheuscommunity/elasticsearch-exporter:v1.9.0
               command:
                 - /bin/elasticsearch_exporter
                 - --es.ssl-skip-verify
