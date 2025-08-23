@@ -131,17 +131,17 @@ spec:
             retries=0
             result=1
             
-            while [[ $retries -lt $max_retries && $result -ne 0 ]]; do
-              ((retries++))
+            while [ $retries -lt $max_retries ] && [ $result -ne 0 ]; do
+              retries=$((retries + 1))
               echo "Waiting for Mattermost... retry $retries/$max_retries"
               wget -q --spider --timeout=5 http://localhost:8000/api/v4/system/ping
               result=$?
-              if [[ $result -ne 0 ]]; then
+              if [ $result -ne 0 ]; then
                 sleep $retry_delay
               fi
             done
             
-            if [[ $result -ne 0 ]]; then
+            if [ $result -ne 0 ]; then
               echo "Mattermost startup timeout"
               exit 1
             fi
@@ -155,7 +155,7 @@ spec:
               --post-data='{"type":"bleve_post_indexing"}' \
               http://localhost:8000/api/v4/jobs)
             
-            if [[ $? -ne 0 ]] || [[ "$response" != *"bleve_post_indexing"* ]]; then
+            if [ $? -ne 0 ] || ! echo "$response" | grep -q "bleve_post_indexing"; then
               echo "Failed to create indexing job: $response"
               exit 1
             fi
@@ -168,21 +168,21 @@ spec:
             retries=0
             result=""
             
-            while [[ $retries -lt $max_retries && "$result" == "" ]]; do
-              ((retries++))
+            while [ $retries -lt $max_retries ] && [ "$result" = "" ]; do
+              retries=$((retries + 1))
               echo "Checking index status... $retries/$max_retries"
               response=$(wget -q -O- --timeout=30 \
                 --header="Authorization: Bearer $MATTERMOST_TOKEN" \
                 "http://localhost:8000/api/v4/jobs/type/bleve_post_indexing?page=0&per_page=1")
               
-              if [[ "$response" == *"success"* ]]; then
+              if echo "$response" | grep -q "success"; then
                 result="success"
               else
                 sleep $retry_delay
               fi
             done
             
-            if [[ "$result" == "" ]]; then
+            if [ "$result" = "" ]; then
               echo "Index completion timeout"
               exit 1
             fi
