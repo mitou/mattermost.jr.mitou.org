@@ -162,7 +162,10 @@ spec:
               --post-data='{"type":"bleve_post_indexing"}' \
               http://localhost:8000/api/v4/jobs)
             
-            if [ $? -ne 0 ] || ! echo "$response" | grep -q "bleve_post_indexing"; then
+            if [ $? -ne 0 ]; then
+              echo "ERROR: Failed to create job"
+              exit 1
+            elif ! echo "$response" | grep -q "bleve_post_indexing"; then
               echo "ERROR: Failed to create indexing job"
               echo "Response: $response"
               echo "HTTP Status: $(echo "$response" | head -n1)"
