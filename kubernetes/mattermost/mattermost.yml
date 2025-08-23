@@ -50,27 +50,6 @@ spec:
               mountPath: /secret
             - name: license
               mountPath: /license
-        - name: bleve-indexer
-          image: mattermost/mattermost-enterprise-edition:release-10.9
-          imagePullPolicy: Always
-          env:
-            - name: MATTERMOST_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: gcp-secret-env
-                  key: MATTERMOST_TOKEN
-          command: [
-            "/usr/bin/bash",
-            "-c",
-            '((mattermost > /dev/null &);max_retries=60; retry_delay=10; retries=0; result=1; while [[ $retries -lt $max_retries && $result -ne 0 ]]; do ((retries++)); echo "retry $retries/$max_retries..."; curl http://localhost:8000/api/v4/system/ping -s; result=$?; if [[ $result -ne 0 ]]; then echo "retry"; sleep $retry_delay; fi; done; if [[ $result -ne 0 ]]; then echo "startup timeout";exit 1;fi;echo "ping success"; response=$(curl -s -i -H "Authorization: Bearer $MATTERMOST_TOKEN" http://localhost:8000/api/v4/jobs -X POST -d ''{"type":"bleve_post_indexing"}'' | grep bleve_post_indexing);if [[ "$response" == "" ]]; then echo "failed to create job";echo "$response" exit 1;fi;echo "job created"; max_retries=864; retry_delay=10; retries=0; result=""; while [[ $retries -lt $max_retries && "$result" == "" ]]; do ((retries++)); echo "wait for index $retries/$max_retries..."; response=$(curl -s "http://localhost:8000/api/v4/jobs/type/bleve_post_indexing?page=0&per_page=1" -H "Authorization: Bearer $MATTERMOST_TOKEN" | grep success); result=$response; if [[ "$result" == "" ]]; then echo "index not completed"; sleep $retry_delay; fi; done; if [[ "$result" == "" ]]; then echo "index timeout"; exit 1;else echo "index success"; fi;) > /var/tmp/post-start.log 2>&1'
-          ]
-          volumeMounts:
-            - name: config
-              mountPath: /mattermost/config/
-            - name: bleve
-              mountPath: /mattermost/bleve/
-            - name: data
-              mountPath: /mattermost/data/
       containers:
       - name: mattermost
         image: mattermost/mattermost-enterprise-edition:release-10.9
@@ -104,9 +83,15 @@ spec:
             path:  /api/v4/system/ping
             port: http
         startupProbe:
-          httpGet:
-            path:  /api/v4/system/ping
-            port: http
+          exec:
+            command:
+              - /bin/sh
+              - -c
+              - |
+                # Check if Mattermost is ready
+                wget -q --spider --timeout=5 http://localhost:8000/api/v4/system/ping || exit 1
+                # Check if bleve indexing is complete
+                test -f /shared/bleve-index-complete || exit 1
           failureThreshold: 8640
           periodSeconds: 10
         volumeMounts:
@@ -116,6 +101,110 @@ spec:
             mountPath: /mattermost/bleve/
           - name: data
             mountPath: /mattermost/data/
+          - name: index-status
+            mountPath: /shared
+      - name: bleve-indexer-sidecar
+        image: busybox
+        env:
+          - name: MATTERMOST_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: gcp-secret-env
+                key: MATTERMOST_TOKEN
+        resources:
+          limits:
+            cpu: 100m
+            memory: 128Mi
+            ephemeral-storage: 100Mi
+          requests:
+            cpu: 50m
+            memory: 64Mi
+            ephemeral-storage: 50Mi
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            echo "Starting bleve indexer sidecar..."
+            
+            # Wait for Mattermost to be ready
+            max_retries=60
+            retry_delay=10
+            retries=0
+            result=1
+            
+            while [[ $retries -lt $max_retries && $result -ne 0 ]]; do
+              ((retries++))
+              echo "Waiting for Mattermost... retry $retries/$max_retries"
+              wget -q --spider --timeout=5 http://localhost:8000/api/v4/system/ping
+              result=$?
+              if [[ $result -ne 0 ]]; then
+                sleep $retry_delay
+              fi
+            done
+            
+            if [[ $result -ne 0 ]]; then
+              echo "Mattermost startup timeout"
+              exit 1
+            fi
+            
+            echo "Mattermost is ready, creating bleve index job..."
+            
+            # Create bleve indexing job
+            response=$(wget -q -O- --timeout=30 \
+              --header="Authorization: Bearer $MATTERMOST_TOKEN" \
+              --header="Content-Type: application/json" \
+              --post-data='{"type":"bleve_post_indexing"}' \
+              http://localhost:8000/api/v4/jobs)
+            
+            if [[ $? -ne 0 ]] || [[ "$response" != *"bleve_post_indexing"* ]]; then
+              echo "Failed to create indexing job: $response"
+              exit 1
+            fi
+            
+            echo "Bleve indexing job created, waiting for completion..."
+            
+            # Wait for job completion
+            max_retries=864
+            retry_delay=10
+            retries=0
+            result=""
+            
+            while [[ $retries -lt $max_retries && "$result" == "" ]]; do
+              ((retries++))
+              echo "Checking index status... $retries/$max_retries"
+              response=$(wget -q -O- --timeout=30 \
+                --header="Authorization: Bearer $MATTERMOST_TOKEN" \
+                "http://localhost:8000/api/v4/jobs/type/bleve_post_indexing?page=0&per_page=1")
+              
+              if [[ "$response" == *"success"* ]]; then
+                result="success"
+              else
+                sleep $retry_delay
+              fi
+            done
+            
+            if [[ "$result" == "" ]]; then
+              echo "Index completion timeout"
+              exit 1
+            fi
+            
+            echo "Bleve indexing completed successfully!"
+            touch /shared/bleve-index-complete
+            
+            # Keep container alive to prevent restart
+            echo "Index complete, entering sleep mode..."
+            sleep infinity
+        volumeMounts:
+          - name: index-status
+            mountPath: /shared
+        startupProbe:
+          exec:
+            command:
+              - /bin/sh
+              - -c
+              - test -f /shared/bleve-index-complete
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          failureThreshold: 900
       volumes:
         - name: data
           emptyDir: {}
@@ -130,3 +219,5 @@ spec:
         - name: license
           secret:
             secretName: gcp-secret-license
+        - name: index-status
+          emptyDir: {}
