@@ -52,7 +52,7 @@ spec:
               mountPath: /license
       containers:
       - name: mattermost
-        image: mattermost/mattermost-enterprise-edition:release-10.9
+        image: mattermost/mattermost-enterprise-edition:release-10.11
         imagePullPolicy: Always
         ports:
         - name: http
