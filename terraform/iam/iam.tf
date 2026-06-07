@@ -55,7 +55,8 @@ resource "google_project_iam_binding" "tf-planners" {
 variable "applier-iam-sa-iam-roles" {
   type = set(string)
   default = [
-    "roles/iam.securityAdmin"
+    "roles/iam.securityAdmin",
+    "roles/iam.admin"
   ]
 }
 
