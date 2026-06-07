@@ -67,12 +67,19 @@ spec:
             cpu: 1000m
             memory: 4Gi
             ephemeral-storage: 4096Mi
+        # Readiness uses the deep ping (?get_server_status=true), which returns
+        # non-200 when the DB or filestore is stalled. A "Running but effectively
+        # dead" pod then flips to NotReady and GKE removes it from the NEG.
+        # Liveness and startup deliberately stay on the shallow ping: tying
+        # liveness to the DB would let a transient DB outage restart every pod
+        # (amplifying a DB blip into a cluster-wide CrashLoop). DB health belongs
+        # in readiness (stop traffic) and the operator probe (fail over) only.
         readinessProbe:
           timeoutSeconds: 5
           periodSeconds: 5
           failureThreshold: 4
           httpGet:
-            path: /api/v4/system/ping
+            path: /api/v4/system/ping?get_server_status=true
             port: http
         livenessProbe:
           initialDelaySeconds: 600

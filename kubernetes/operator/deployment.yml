@@ -1,0 +1,97 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mm-active-standby-operator
+  namespace: mattermost
+  labels:
+    app: mm-active-standby-operator
+spec:
+  # Single instance, Recreate strategy: there must never be two operators making
+  # conflicting label decisions at the same time. No leader election needed.
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: mm-active-standby-operator
+  template:
+    metadata:
+      labels:
+        app: mm-active-standby-operator
+    spec:
+      serviceAccountName: mm-active-standby-operator
+      securityContext:
+        runAsNonRoot: true
+      containers:
+        - name: operator
+          # Generic operator, published from github.com/mitou/kubernetes-active-standby-operator.
+          # NOTE: the GHCR package must be public (or an imagePullSecret added)
+          # for GKE to pull it. Pin to a released tag instead of :latest once cut.
+          image: ghcr.io/mitou/kubernetes-active-standby-operator:latest
+          imagePullPolicy: Always
+          env:
+            - name: NAMESPACE
+              value: mattermost
+            - name: POD_LABEL_SELECTOR
+              value: app=mattermost
+            - name: ROLE_LABEL_KEY
+              value: mm-role
+            - name: ROLE_LABEL_VALUE
+              value: active
+            - name: SERVICE_NAME
+              value: mattermost
+            - name: POD_PORT
+              value: "8000"
+            - name: PROBE_PATH
+              value: /api/v4/system/ping?get_server_status=true
+            # The deep ping returns database_status when healthy and a non-2xx
+            # when the DB is down; this substring guards a 200-but-degraded case.
+            - name: PROBE_EXPECT_BODY
+              value: '"database_status":"OK"'
+            - name: PROBE_TIMEOUT
+              value: 3s
+            - name: PROBE_LATENCY_BUDGET
+              value: 2s
+            - name: RECONCILE_INTERVAL
+              value: 5s
+            - name: FAILURE_THRESHOLD
+              value: "3"
+            - name: FAILOVER_COOLDOWN
+              value: 60s
+            - name: DELETE_STUCK_ACTIVE
+              value: "true"
+            - name: ENDPOINT_PROGRAM_WAIT
+              value: 30s
+            # Downward API: used as the involvedObject for namespace-level Events.
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          ports:
+            - name: health
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: health
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: health
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+              ephemeral-storage: 100Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+              ephemeral-storage: 100Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            capabilities:
+              drop: ["ALL"]

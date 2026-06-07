@@ -8,8 +8,12 @@ metadata:
     cloud.google.com/backend-config: '{"default": "mattermost-backend-service"}'
 spec:
   type: ClusterIP
+  # active/standby: the NEG (and therefore the GCP LB) only sees the single pod
+  # that the active-standby-operator has labelled mm-role=active. The standby pod
+  # runs mattermost but carries no mm-role label, so it is excluded from the NEG.
   selector:
     app: mattermost
+    mm-role: active
   ports:
   - protocol: TCP
     port: 80

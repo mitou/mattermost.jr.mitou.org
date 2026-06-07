@@ -43,5 +43,43 @@ jobs:
       - name: Deploy
         # if: env. GIT_DIFF_FILTERED
         run: |-
-          kubectl apply -f ./kubernetes/mattermost/
+          # Ordering matters for the active/standby cutover: the narrowed Service
+          # selector (app=mattermost,mm-role=active) must NOT take effect until the
+          # operator has labelled a pod, otherwise the NEG would momentarily have
+          # zero endpoints and the LB would 502.
+          #
+          # 1) Apply everything in the mattermost dir EXCEPT the Service. This
+          #    creates/updates the namespace, RBAC and Deployment while leaving the
+          #    currently-serving Service selector untouched.
+          for f in ./kubernetes/mattermost/*.yml ./kubernetes/mattermost/*.yaml; do
+            [ -e "$f" ] || continue
+            [ "$(basename "$f")" = "service.yml" ] && continue
+            kubectl apply -f "$f"
+          done
+
+          # 2) Bring up the operator; it assigns the mm-role=active label.
+          kubectl apply -f ./kubernetes/operator/
+
+          # 3) Wait until an active pod exists before relying on the narrowed
+          #    selector (protects the very first cutover; a no-op afterwards). If
+          #    no active pod appears (e.g. the operator image has not been pushed
+          #    yet), FAIL the job WITHOUT narrowing the Service: the existing broad
+          #    selector keeps both pods serving, so there is no outage — just retry
+          #    once the operator is healthy.
+          echo "waiting for an active mattermost pod..."
+          active_present=false
+          for i in $(seq 1 40); do
+            if kubectl -n mattermost get pods -l app=mattermost,mm-role=active \
+                 --field-selector=status.phase=Running -o name | grep -q .; then
+              echo "active pod present"; active_present=true; break
+            fi
+            sleep 3
+          done
+          if [ "$active_present" != "true" ]; then
+            echo "::error::no active mattermost pod after timeout; leaving Service selector unchanged"
+            exit 1
+          fi
+
+          # 4) Now it is safe to narrow the Service, then roll the workload.
+          kubectl apply -f ./kubernetes/mattermost/service.yml
           kubectl -n mattermost rollout restart deployment mattermost
